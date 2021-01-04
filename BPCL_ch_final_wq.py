@@ -37,7 +37,7 @@ import posenet
 #import RTSP
 import tracker_model
 import XY_frame as XY_track
-import Timer_single_1 as Timer
+import Timer_network as Timer
 #import Angle
 import error
 import Health_Api
@@ -57,6 +57,7 @@ count,prev_moving,moving,track_dict,st_dict,cyl = 0,False, False, {},0,0
 first_check = datetime.strptime(first_check,"%H:%M:%S")
 last_check = datetime.strptime(last_check,"%H:%M:%S")
 wt_flag =0
+idle_time = 0
 def Diagnostics():
 	try:
 		print("Inside Diagnostics function")
@@ -128,6 +129,12 @@ if __name__ == '__main__':
 			moving,img2,track_dict,st_dict,count,cyl = XY_track.track(img1,darknet_image_T,network_T,class_names_T,track_dict,st_dict,count,cyl,moving)
 			#moving =True
 			if moving == True:
+				if idle_time != 0:
+					#print(idle_time,type(idle_time))
+					off_time = int((datetime.now() - idle_time).total_seconds())
+					print ("************************* OFF Time -> {} *******************".format(off_time))
+					Timer.continue_event(off_time)
+					idle_time = 0
 				input_image, draw_image, output_scale = posenet.read_imgfile(img1, scale_factor=1.0, output_stride=output_stride)
 				heatmaps_result, offsets_result, displacement_fwd_result, displacement_bwd_result = sess.run(model_outputs,feed_dict={'image:0': input_image})
 				pose_scores, keypoint_scores, keypoint_coords = posenet.decode_multiple_poses(
@@ -199,7 +206,11 @@ if __name__ == '__main__':
 				if cv2.waitKey(1) & 0xFF == ord('q'):
 					break"""
 			elif moving == False and prev_moving == True:
-				Timer.reset()
+				idle_time = datetime.now()
+			elif moving == False and prev_moving ==False and idle_time != 0:
+				if datetime.now() > idle_time + timedelta(seconds = 60):
+				Timer.continue_event(60)
+				idle_time =datetime.now()
 			if ht_time < datetime.now():
 				health = Thread(target=Diagnostics,args=())
 				health.start()
