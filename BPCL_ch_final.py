@@ -36,16 +36,16 @@ import View
 import posenet
 import tracker_model
 import XY_frame as XY_track
-import Timer_single_1 as Timer
+#import Timer_network as Timer
 import error
-import Health_Api
-import screening2
-import screening1
+#import Health_Api
+#import screening2
+#import screening1
 
-screening1.create()
-screening2.create()
-screening1.connect()
-screening2.connect()
+#screening1.create()
+#screening2.create()
+#screening1.connect()
+#screening2.connect()
 config="/home/nvidia/BPCL/BPCL_final/BPCL_config.json"
 with open(config) as json_data:
 	info=json.load(json_data)
@@ -93,29 +93,29 @@ class camera():
 
 if __name__ == '__main__':
 	try:
-		#cam = cv2.VideoCapture("/home/nvidia/BHOPAL_BPCL_NX1_PERSON_NOT_ATTENTIVE_EVENT22_ON_2020-12-12T10-48-44.avi")
+		cam = cv2.VideoCapture("/home/nvidia/BPCL/ch.mp4")
 		sess=tf.compat.v1.Session()
 		model_cfg, model_outputs = posenet.load_model(101, sess)
 		output_stride = model_cfg['output_stride']
 		darknet_image_T,network_T,class_names_T=tracker_model.load_model()
-		Timer.reset()
+		#Timer.reset()
 		print("Tracker model loaded")
-		cam1 = camera(cam1)
-		time.sleep(1)
+		#cam1 = camera(cam1)
+		#time.sleep(1)
 		#cam2 = camera(cam2)
 		#time.sleep(1)
 		ht_time=datetime.now()
 		#kk = 0
 		while True:
 			loop_start_time = datetime.now()
-			#print("loop start",loop_start_time)
-			img1 = cam1.get_frame()
-			img1 = cv2.resize(img1,(1280,720))
+			print("loop start",loop_start_time)
+			#img1 = cam1.get_frame()
+			#img1 = cv2.resize(img1,(1280,720))
 			#img2 = cam2.get_frame()
 			#img2 = cv2.resize(img2,(1280,720))
-			#ret,img1 = cam.read()
+			ret,img1 = cam.read()
 			moving,img2,track_dict,st_dict,count,cyl = XY_track.track(img1,darknet_image_T,network_T,class_names_T,track_dict,st_dict,count,cyl,moving)
-			#moving =True
+			moving =True
 			if moving == True:
 				input_image, draw_image, output_scale = posenet.read_imgfile(img1, scale_factor=1.0, output_stride=output_stride)
 				heatmaps_result, offsets_result, displacement_fwd_result, displacement_bwd_result = sess.run(model_outputs,feed_dict={'image:0': input_image})
@@ -135,22 +135,22 @@ if __name__ == '__main__':
 				number_motion=Motion.motion(motion_coords,motion_scores,number_view)
                 
 				if number_roi >= 1:
-					Timer.timer("person",True,cam1)
+					#Timer.timer("person",True,cam1)
 					Roi_draw =  True
 				if number_roi == 0:
-					Timer.timer("person",False,cam1)
+					#Timer.timer("person",False,cam1)
 					Roi_draw = False
 				if number_roi >= 1 and number_view >= 1:
-					Timer.timer("direction",True,cam1)
+					#Timer.timer("direction",True,cam1)
 					View_draw =  True
 				if number_roi >= 1 and number_view == 0:
-					Timer.timer("direction",False,cam1)
+					#Timer.timer("direction",False,cam1)
 					View_draw =  False
 				if number_roi >= 1 and number_view >= 1 and number_motion == 1:
-					Timer.timer("motion",True,cam1)
+					#Timer.timer("motion",True,cam1)
 					Motion_draw = True
 				if number_roi >= 1 and number_view >=  1 and number_motion == 0:
-					Timer.timer("motion", False,cam1)
+					#Timer.timer("motion", False,cam1)
 					Motion_draw = False
 				img1 = cv2.putText(img1, "Person in ROI: True" , (20,70), cv2.FONT_HERSHEY_SIMPLEX , 1,  (255, 0, 0) , 2, cv2.LINE_AA)
 				if number_view >= 1 and number_motion ==1:
@@ -187,14 +187,14 @@ if __name__ == '__main__':
 				cv2.imshow("frame",overlay_image)
 				if cv2.waitKey(1) & 0xFF == ord('q'):
 					break'''
-			if moving == True and prev_moving == False:
-				Timer.reset()
-			if ht_time < datetime.now():
-				health = Thread(target=Diagnostics,args=())
-				health.start()
-				ht_time=datetime.now()+timedelta(minutes=5)
-			screening1.screening(img1)
-			screening2.screening(img2)
+			#if moving == True and prev_moving == False:
+			#	Timer.reset()
+			#if ht_time < datetime.now():
+			#	health = Thread(target=Diagnostics,args=())
+			#	health.start()
+			#	ht_time=datetime.now()+timedelta(minutes=5)
+			#screening1.screening(img1)
+			#screening2.screening(img2)
 			tf.keras.backend.clear_session()
 			loop_end_time = datetime.now()
 			while(int((loop_end_time - loop_start_time).total_seconds()*1000) < 300 ):

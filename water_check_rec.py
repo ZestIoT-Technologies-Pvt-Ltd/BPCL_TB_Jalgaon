@@ -29,7 +29,7 @@ def water_quality(img1):
 	cv2.imwrite(water_temp+img_name,im1)
 	print("Red -> {}   Green -> {}   Blue -> {} ".format(red,green,blue))
 	if wat_quality == 0 :
-		if int(red) > 30000 and int(green) > 30000 and int(blue) > 30000 :
+		if int(red) > 117000 and int(green) > 120000 and int(blue) > 120000 :
 			print("******************* Warning ********************")
 			wat_check=wat_check +1
 
@@ -52,13 +52,13 @@ def water_quality(img1):
 					print("API success")
 				else:
 					print("API failed please check")
-					error.raised("3","API failed")
+					error.raised(516,"Error in water function")
 			except Exception as e:
 				print("error in event_call function")
-				error.raised("3",str(e))
+				error.raised(8,"Error in API")
 
 	if wat_quality ==1:
-		if int(red) < 20000 and int(green) < 20000 and int(blue) < 20000 :
+		if int(red) < 65000 and int(green) < 65000 and int(blue) < 65000 :
 			wat_rectify=wat_rectify+1
 			print("********************* Restored *******************")
 		if wat_rectify >4 :
@@ -82,8 +82,8 @@ def water_rectify():
 			print("API success")
 		else:
 			print("API failed please check")
-			error.raised("3","API failed")
+			error.raised(516,"Error in water function")
 	except Exception as e:
 		print("error in event_call function")
-		error.raised("3",str(e))
+		error.raised(8,"Error in API")
 

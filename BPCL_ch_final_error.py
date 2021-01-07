@@ -21,7 +21,6 @@ This function shall perform the following:
 7)The Diagnostics methods finds the devices are in proper working condition or not.
 '''
 import cv2
-from queue import Queue
 import traceback
 import numpy as np
 from threading import Thread
@@ -64,7 +63,7 @@ def Diagnostics():
 		Health_Api.apicall()
 	except Exception as e:
 		print(str(e))
-		error("6",str(e))
+		error(16,"Error in Health Api")
 
 class camera():
 
@@ -115,19 +114,23 @@ if __name__ == '__main__':
 		ht_time=datetime.now()
 		#kk = 0
 		while True:
-			loop_start_time = datetime.now()
-			print("loop start",loop_start_time)
-			img1 = cam1.get_frame()
-			img1 = cv2.resize(img1,(1280,720))
-			#img22 = cam2.get_frame()
-			#img22 = cv2.resize(img22,(1280,720))
+			try:
+				loop_start_time = datetime.now()
+				print("loop start",loop_start_time)
+				img1 = cam1.get_frame()
+				img1 = cv2.resize(img1,(1280,720))
+				#img22 = cam2.get_frame()
+				#img22 = cv2.resize(img22,(1280,720))
+			except Exception as e:
+				print(str(e))
+				error.raised(1,"Error while reading from camera")
 			#cv2.imwrite("img1.jpg",img1)
 			#cv2.imwrite("img2.jpg",img2)
 			#break
 			#ret,img1 = cam.read()
 			#print("after camera read")
 			moving,img2,track_dict,st_dict,count,cyl = XY_track.track(img1,darknet_image_T,network_T,class_names_T,track_dict,st_dict,count,cyl,moving)
-			moving =True
+			#moving =True
 			if moving == True:
 				if idle_time != 0:
 					#print(idle_time,type(idle_time))
@@ -239,9 +242,9 @@ if __name__ == '__main__':
 				loop_end_time = datetime.now()
 				#print("inside while loop")
 			#print("end_time",loop_end_time)
-			print(str(datetime.now()))
+			#print(str(datetime.now()))
 			prev_moving = moving
 	except Exception as e:
 		print(str(e))
 		traceback.print_exc()
-		error.raised("1",str(e))
+		error.raised(1,"Error in Main function")

@@ -14,7 +14,7 @@ then
 	else
 		kill -9 $Process1
 		echo "Starting BPCL process"
-		python3 BPCL_ch_final_wq.py
+		python3 BPCL_ch_final_wq.py  >> /media/49AE-64D6/BPCL.log
 	fi
 else
 	echo "stop"

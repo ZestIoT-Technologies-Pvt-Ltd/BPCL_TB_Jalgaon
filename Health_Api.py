@@ -1,8 +1,10 @@
 import time
+import json
 from sockets import ClientSocket
 from pynng import Timeout
 from datetime import datetime, timedelta
 from subprocess import Popen, PIPE
+import subprocess
 import error
 """
 Input: error_file,event file
@@ -120,8 +122,31 @@ def apicall():
         print(msg)
         if int(msg["data"]["status"]) == 200:
             print("API success")
+            net_event(sc)
         else:
             error.raised("8","API failed")
     except Exception as e:
+        print(str(e))
         error.raised("8",str(e))
+#apicall()
+
+def net_event(sc):
+    try:
+        print("************************************* Checking previous events *****************************")
+        with open("/home/nvidia/BPCL/BPCL_final/net_event.txt","r+") as f:
+            for i in f.readlines():
+                i=i.replace("'",'"')
+                print(i)
+                net_line = json.loads(i)
+                #print("here")
+                data = net_line["data"]
+                event = net_line["event"]
+                logdate = net_line["data"]["event_time"]
+                #print(data,event,logdate)
+                sc.send(time_stamp=logdate, message_type=event, data=data)
+                msg = sc.receive()
+                print(msg)
+                subprocess.call(["sed -i 1d /home/nvidia/BPCL/BPCL_final/net_event.txt"],shell=True)
+    except Exception as e:
+        print(str(e))
 apicall()
