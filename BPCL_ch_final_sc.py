@@ -40,13 +40,12 @@ import Timer_network as Timer
 #import Angle
 import error
 import Health_Api
-import screening2
-import screening1
-import water_check_rec as water_check
-screening1.create()
-screening2.create()
-screening1.connect()
-screening2.connect()
+from stream import VideoStream
+import water_check_rec1 as water_check
+sc1=VideoStream('edgeai.local',8097)
+sc2=VideoStream('edgeai.local',8096)
+sc1.connect()
+sc2.connect()
 config="/home/nvidia/BPCL/BPCL_final/BPCL_config.json"
 with open(config) as json_data:
 	info=json.load(json_data)
@@ -63,7 +62,7 @@ def Diagnostics():
 		Health_Api.apicall()
 	except Exception as e:
 		print(str(e))
-		error(16,"Error in Health Api")
+		error.raised(16,"Error in Health API")
 
 class camera():
 
@@ -119,16 +118,15 @@ if __name__ == '__main__':
 				print("loop start",loop_start_time)
 				img1 = cam1.get_frame()
 				img1 = cv2.resize(img1,(1280,720))
-				#img22 = cam2.get_frame()
-				#img22 = cv2.resize(img22,(1280,720))
+				img22 = cam2.get_frame()
+				img22 = cv2.resize(img22,(1280,720))
+				#cv2.imwrite("img1.jpg",img1)
+				#cv2.imwrite("img2.jpg",img2)
+				#break
+				#ret,img1 = cam.read()
+				#print("after camera read")
 			except Exception as e:
-				print(str(e))
-				error.raised(1,"Error while reading from camera")
-			#cv2.imwrite("img1.jpg",img1)
-			#cv2.imwrite("img2.jpg",img2)
-			#break
-			#ret,img1 = cam.read()
-			#print("after camera read")
+				error.raised(1,"Error in Reading from Camera")
 			moving,img2,track_dict,st_dict,count,cyl = XY_track.track(img1,darknet_image_T,network_T,class_names_T,track_dict,st_dict,count,cyl,moving)
 			#moving =True
 			if moving == True:
@@ -218,8 +216,8 @@ if __name__ == '__main__':
 				health = Thread(target=Diagnostics,args=())
 				health.start()
 				ht_time=datetime.now()+timedelta(minutes=5)
-			screening1.screening(img1)
-			screening2.screening(img1)
+			sc1.screening(img22)
+			sc2.screening(img1)
 			tf.keras.backend.clear_session()
 			loop_end_time = datetime.now()
 			if (loop_end_time.time() >= first_check.time() and loop_end_time.time() < last_check.time() and moving == True):
@@ -231,7 +229,7 @@ if __name__ == '__main__':
 					water_check.water_quality(img1)
 					wt_time= datetime.now()+timedelta(minutes=1)
 					wt_flag=wt_flag+1
-				elif wt_flag >= 10:
+				if wt_flag >= 9:
 					first_check=first_check+timedelta(minutes=60)
 					wt_flag = 0
 					wat_check = 0
@@ -242,9 +240,9 @@ if __name__ == '__main__':
 				loop_end_time = datetime.now()
 				#print("inside while loop")
 			#print("end_time",loop_end_time)
-			#print(str(datetime.now()))
+			print(str(datetime.now()))
 			prev_moving = moving
 	except Exception as e:
 		print(str(e))
 		traceback.print_exc()
-		error.raised(1,"Error in Main function")
+		error.raised(1,"Error in Main File")

@@ -38,13 +38,17 @@ def health():
         try:
                 with open(error_file,'r+') as f:
                         j= f.readlines()
+                        j=j[0].replace("'",'"')
                         #print(j[0])
-                        j = j[0].split(" :: ")
-                        error =j[-1]
-                        error_algo = j[0]
-                        error_time = j[1]
+                        er_str=json.loads(j)
+                        error = er_str["error_code"]
+                        error_algo = er_str["error_algo"]
+                        error_time = er_str["error_time"]
                         #print(" Last Error: {} has occured in {} part of the script at {}".format(error,error_algo,error_time))
         except Exception as e:
+                error ="nothing"
+                error_algo="NA"
+                error_time = str(datetime.now())
                 print(str(e))
         tegra=Popen(['/home/nvidia/tegrastats'],stdout=PIPE)
         time.sleep(7)
@@ -101,15 +105,10 @@ def health():
         return data
 
 def apicall():
-    global er
     try:
         sc = ClientSocket(device_id=str('BPCL_JAL_NX_0001'))
     except Exception as e:
-        er=er+1
-        if er < 4:
-            time.sleep(1)
-            apicall()
-        error.raised("7",str(e))
+        error.raised(4,"Error while creating Socket")
 
     #while True:
     try:
@@ -124,10 +123,10 @@ def apicall():
             print("API success")
             net_event(sc)
         else:
-            error.raised("8","API failed")
+            error.raised(8,"API failed")
     except Exception as e:
         print(str(e))
-        error.raised("8",str(e))
+        error.raised(16,"Error in Health API")
 #apicall()
 
 def net_event(sc):
@@ -148,5 +147,6 @@ def net_event(sc):
                 print(msg)
                 subprocess.call(["sed -i 1d /home/nvidia/BPCL/BPCL_final/net_event.txt"],shell=True)
     except Exception as e:
+        error.raised(32,"Error in Backup API")
         print(str(e))
 apicall()

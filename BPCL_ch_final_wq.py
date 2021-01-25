@@ -43,7 +43,7 @@ import error
 import Health_Api
 import screening2
 import screening1
-import water_check_rec as water_check
+import water_check_rec1 as water_check
 screening1.create()
 screening2.create()
 screening1.connect()
@@ -119,15 +119,15 @@ if __name__ == '__main__':
 			print("loop start",loop_start_time)
 			img1 = cam1.get_frame()
 			img1 = cv2.resize(img1,(1280,720))
-			#img22 = cam2.get_frame()
-			#img22 = cv2.resize(img22,(1280,720))
+			img22 = cam2.get_frame()
+			img22 = cv2.resize(img22,(1280,720))
 			#cv2.imwrite("img1.jpg",img1)
 			#cv2.imwrite("img2.jpg",img2)
 			#break
 			#ret,img1 = cam.read()
 			#print("after camera read")
 			moving,img2,track_dict,st_dict,count,cyl = XY_track.track(img1,darknet_image_T,network_T,class_names_T,track_dict,st_dict,count,cyl,moving)
-			moving =True
+			#moving =True
 			if moving == True:
 				if idle_time != 0:
 					#print(idle_time,type(idle_time))
@@ -215,7 +215,7 @@ if __name__ == '__main__':
 				health = Thread(target=Diagnostics,args=())
 				health.start()
 				ht_time=datetime.now()+timedelta(minutes=5)
-			screening1.screening(img1)
+			screening1.screening(img22)
 			screening2.screening(img1)
 			tf.keras.backend.clear_session()
 			loop_end_time = datetime.now()
@@ -228,7 +228,7 @@ if __name__ == '__main__':
 					water_check.water_quality(img1)
 					wt_time= datetime.now()+timedelta(minutes=1)
 					wt_flag=wt_flag+1
-				elif wt_flag >= 10:
+				if wt_flag >= 10:
 					first_check=first_check+timedelta(minutes=60)
 					wt_flag = 0
 					wat_check = 0

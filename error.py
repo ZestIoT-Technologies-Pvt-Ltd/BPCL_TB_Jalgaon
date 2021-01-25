@@ -4,6 +4,7 @@ config = "/home/nvidia/BPCL/BPCL_final/error.json"
 error_state="/home/nvidia/BPCL/BPCL_final/error_code.txt"
 error_code = 0
 def raised(er,er_string):
+	global error_code
 	try:
 		error_code = error_code | er
 		with open(error_state,'w') as f:

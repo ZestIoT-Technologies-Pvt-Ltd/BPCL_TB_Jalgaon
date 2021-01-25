@@ -8,16 +8,21 @@ import os
 wat_check =0
 wat_rectify =0
 wat_quality =0
-water_path="/media/49AE-64D6/video_storage/"
-water_temp="/media/49AE-64D6/temp_video_storage/"
+water_path="/media/usb/video_storage/"
+water_temp="/media/usb/temp_video_storage/"
 def water_quality(img1):
 	global wat_check
+	global wat_flag
 	global wat_quality
 	global wat_rectify
-	im = img1[601:630,223:245]
-	im1 = cv2.rectangle(img1,(978,481),(1010,512),(255,0,0),2)
+	print("shape",img1.shape)
+	im = img1[490:515,848:870]
+	#im2 = img1[480:505,961:983]
+	#im2 = img1[495:520,961:983]
+	#im1 = cv2.rectangle(img1,(961,495),(983,520),(255,0,0),2)
+	im1 = cv2.rectangle(img1,(848,490),(870,515),(255,0,0),2)
 	img_name=datetime.now().strftime("%H%M%S")+".jpg"
-	#cv2.imwrite(water_temp+img_name,im1)
+	cv2.imwrite(water_temp+img_name,im1)
 	sum_row = np.sum(im,axis = 0)
 	sum_col = np.sum(sum_row,axis = 0)
 	sum_total = sum_col[0] + sum_col[1] + sum_col[2]
@@ -25,11 +30,20 @@ def water_quality(img1):
 	green = sum_col[1]
 	red = sum_col[2]
 	string = "R :"+ str(red)+" G : "+ str(green)+" B : "+str(blue)
+	
+	#sum_row2 = np.sum(im2,axis = 0)
+	#sum_col2 = np.sum(sum_row2,axis = 0)
+	#sum_total2 = sum_col2[0] + sum_col2[1] + sum_col2[2]
+	#blue2 = sum_col2[0]
+	#green2 = sum_col2[1]
+	#red2 = sum_col2[2]
+
 	#im1 = cv2.putText(im1, string, (20,100), cv2.FONT_HERSHEY_SIMPLEX , 1,  (255, 0, 255) , 2, cv2.LINE_AA)
-	cv2.imwrite(water_temp+img_name,im1)
+	#cv2.imwrite(water_temp+img_name,im1)
 	print("Red -> {}   Green -> {}   Blue -> {} ".format(red,green,blue))
+	#print("Red -> {}   Green -> {}   Blue -> {} ".format(red2,green2,blue2))
 	if wat_quality == 0 :
-		if int(red) > 117000 and int(green) > 120000 and int(blue) > 120000 :
+		if int(red) > 50000 and int(green) > 53000 and int(blue) > 80000 :
 			print("******************* Warning ********************")
 			wat_check=wat_check +1
 
@@ -37,7 +51,7 @@ def water_quality(img1):
 		if wat_check > 4:
 			img_dir=(datetime.now()).strftime("%Y_%m_%d")
 			wat_quality =1
-			wat_path = water_path+img_dir+"/JALGAON_EVENT1_ON_"+img_name
+			wat_path = water_path+img_dir+"/JALGAON_WATER_QUALITY_BAD_EVENT1_ON_"+img_name
 			shutil.move(water_temp+img_name,wat_path)
 			print("***************************** Water Quality not good ***************************")
 			try:
@@ -48,25 +62,27 @@ def water_quality(img1):
 				msg = sc.receive()
 				print(msg)
 				wat_check =0
+				wat_flag =10
 				if int(msg["data"]["status"]) == 200:
 					print("API success")
 				else:
 					print("API failed please check")
-					error.raised(516,"Error in water function")
+					error.raised(8,"Error in API")
 			except Exception as e:
 				print("error in event_call function")
-				error.raised(8,"Error in API")
+				error.raised(512,"Error in Water Check API")
 
-	if wat_quality ==1:
-		if int(red) < 65000 and int(green) < 65000 and int(blue) < 65000 :
+	elif wat_quality ==1:
+		if int(red) < 40000 and int(green) < 41000 and int(blue) < 76000 :
 			wat_rectify=wat_rectify+1
 			print("********************* Restored *******************")
 		if wat_rectify >4 :
 			wat_quality =0
 			img_dir=(datetime.now()).strftime("%Y_%m_%d")
-			shutil.move(water_temp+img_name,water_path+img_dir+"/JALGAON_EVENT1_OFF_"+img_name)
+			shutil.move(water_temp+img_name,water_path+img_dir+"/JALGAON_WATER_QUALITY_RESTORED_EVENT1_OFF_"+img_name)
 			water_rectify()
 			wat_rectify=0
+			wat_flag = 10
 			print("***************************** Water Qualit Restored ***************************")
 
 def water_rectify():
@@ -82,8 +98,9 @@ def water_rectify():
 			print("API success")
 		else:
 			print("API failed please check")
-			error.raised(516,"Error in water function")
+			error.raised(8,"API failed")
 	except Exception as e:
 		print("error in event_call function")
-		error.raised(8,"Error in API")
+		error.raised(512,"Error in Water Check API")
+
 

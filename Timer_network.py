@@ -71,9 +71,9 @@ print("Palert -> ", Palert_time, Dalert_time, Malert_time)
 Ptimer,Pdetect,Pcheck,Pst_time,Ptrigger,Prectify,Pback,Pfp_time,Pvideo,Ppath,Pvend_time = 0,0,0,0,0,0,0,0,0,0,0
 Dtimer,Ddetect,Dcheck,Dst_time,Dtrigger,Drectify,Dback,Dfp_time,Dvideo,Dpath,Dvend_time = 0,0,0,0,0,0,0,0,0,0,0
 Mtimer,Mdetect,Mcheck,Mst_time,Mtrigger,Mrectify,Mback,Mfp_time,Mvideo,Mpath,Mvend_time = 0,0,0,0,0,0,0,0,0,0,0
-vid_path="/media/49AE-64D6/"
+vid_path="/media/usb/"
 video_flag =0
-temp_file="/media/49AE-64D6/"
+temp_file="/media/usb/"
 fourcc = cv2.VideoWriter_fourcc(*'XVID')
 
 def start_video(event):
@@ -139,7 +139,6 @@ def video_function(event,cam):
 					le_time = datetime.now()
 
 def event_call(event,temp,path):
-	global er
 	logdate=(datetime.now()).strftime("%Y-%m-%d %H:%M:%S")
 	#print("video Path {}".format(vid_path))
 	if path  == None:
@@ -169,10 +168,10 @@ def event_call(event,temp,path):
 			print("API success")
 		else:
 			print("API failed please check")
-			error.raised("3","API failed")
+			error.raised(8,"API failed")
 	except Exception as e:
 		print("error in event_call function")
-		error.raised("3",str(e))
+		error.raised(32,"Error in socket creation")
 		with open(net_file,'a+') as nfile:
 			event_data = {'event':event,'data':data}
 			nfile.write(str(event_data))
@@ -193,8 +192,10 @@ def timer(algo,flag,cam):
 						Ptimer=0
 						if Mtimer ==1:
 							Mtimer=0
+							Mtrigger = 0
 						if Dtimer==1:
 							Dtimer=0
+							Dtrigger = 0
 					if Ptimer == 2 and Pback ==0:
 						Prectify =datetime.now()
 						#Ptimer=0
@@ -217,8 +218,10 @@ def timer(algo,flag,cam):
 					Pflag = False
 					if Mtimer == 1:
 						Mtimer =0
+						Mtrigger =0
 					if Dtimer == 1:
 						Dtimer =0
+						Dtrigger =0
 					Ptimer=1
 					Pback=0
 					video_trigger(cam,"EVENT21_ON")
@@ -240,7 +243,7 @@ def timer(algo,flag,cam):
 					print("*********  ALERT!!! Person not in ROI  ******* Time : " , current_time)
 					Ptimer = 2
 					Dtimer,Mtimer = 0,0
-
+					Mtrigger, Dtrigger,Ptrigger = 0,0,0
 				elif Ptimer != 0 and datetime.now() > Pfp_time + timedelta(seconds=15):
 					Pdetect=0
 					Pfp_time=datetime.now()
@@ -275,6 +278,7 @@ def timer(algo,flag,cam):
 				if datetime.now() > Dst_time + timedelta(seconds=3) and Dtimer == 0 and Dcheck == 1:
 					flag = False
 					if Mtimer == 1:
+						Mtrigger =0
 						Mtimer=0
 					Dtimer=1
 					Dback=0
@@ -297,6 +301,8 @@ def timer(algo,flag,cam):
 					print("*********  ALERT!!!   not looking in that direction ***** Time : ", current_time)
 					Dtimer = 2
 					Mtimer = 0
+					Dtrigger = 0
+					Mtrigger = 0 
 
 				elif Dtimer != 0 and datetime.now() > Dfp_time + timedelta(seconds=15):
 					Ddetect=0
@@ -310,6 +316,7 @@ def timer(algo,flag,cam):
 				
 				if Mtimer != 0 and Mdetect > Malert_frame:
 					if Mtimer == 1:
+						Mtrigger = 0
 						Mtimer=0
 					elif Mtimer == 2 and Mback==0:
 						Mback =1
@@ -349,13 +356,14 @@ def timer(algo,flag,cam):
 					current_time = str(current_time)[10:]
 					print("*********  ALERT!!!   Motion is not detected *** Time :", current_time)
 					Mtimer = 2
+					Mtrigger = 0
 				elif Mtimer != 0 and datetime.now() > Mfp_time + timedelta(seconds=15):
 					Mdetect=0
 					Mfp_time=datetime.now()
 
 	except Exception as e:
 		print (str(e),"error in timer")
-		error.raised("7",str(e))
+		error.raised(128,"Error in Timer file")
 
 def video_trigger(cam,event):
 	global video_flag
@@ -369,7 +377,7 @@ def video_trigger(cam,event):
 
 	except Exception as e:
 		print (str(e),"error in timer")
-		error.raised("7",str(e))
+		error.raised(128,"Error in Timer file")
 
 def reset():
 	global Ptimer,Mtimer,Dtimer
@@ -385,9 +393,9 @@ def continue_event(off_time):
 	print("Initial time P -> {}  D -> {}  M -> {}".format(Ptrigger,Dtrigger,Mtrigger))
 	if Ptrigger != 0:
 		Ptrigger = Ptrigger + timedelta(seconds = off_time)
-	elif Dtrigger != 0:
+	if Dtrigger != 0:
 		Dtrigger = Dtrigger + timedelta(seconds = off_time)
-	elif Mtrigger != 0:
+	if Mtrigger != 0:
 		Mtrigger = Mtrigger + timedelta(seconds = off_time)
 	print("After Off_Time time P -> {}  D -> {}  M -> {}".format(Ptrigger, Dtrigger,Mtrigger))
 
