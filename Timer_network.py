@@ -209,6 +209,7 @@ def timer(algo,flag,cam):
 						current_time = str(current_time)[10:]
 						print("*********  Rectification!!! Person in ROI  ******* Time : " , current_time)
 						Ptimer=0
+						Ptrigger=0
 			else:
 				print("ptimer",Ptimer,Pcheck,Pdetect, Palert_frame)
 				if Pcheck == 0 and Ptimer == 0:
@@ -271,6 +272,7 @@ def timer(algo,flag,cam):
 						current_time = str(current_time)[10:]
 						print("*********  Rectification!!! Person is attentive  ******* Time : " , current_time)
 						Dtimer = 0
+						Dtrigger=0
 			else:
 				if Dcheck == 0 and Dtimer == 0:
 					Dst_time =datetime.now()
@@ -330,6 +332,7 @@ def timer(algo,flag,cam):
 						current_time = str(current_time)[10:]
 						print("*********  Rectification!!! Person is attentive  ******* Time : " , current_time)
 						Mtimer = 0
+						Mtrigger = 0
 			else:
 				if Mcheck == 0 and Mtimer == 0:
 					Mst_time =datetime.now()
